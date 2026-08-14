@@ -1,0 +1,201 @@
+<title>영수증 - {{RECIPIENT}}</title>
+<style>
+  :root {
+    --page-bg: #eef0f3;
+    --paper-bg: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #555555;
+    --rule: #1a1a1a;
+    --rule-soft: #d8d8d8;
+    --input-blue: #1a56db;
+    --head-bg: #f4f5f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page-bg: #15171c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #15171c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  .sheet {
+    width: 720px;
+    max-width: 100%;
+    background: var(--paper-bg);
+    color: #1a1a1a;
+    padding: 48px 56px 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    border-radius: 4px;
+  }
+  h1.title {
+    text-align: center;
+    font-size: 30px;
+    letter-spacing: 16px;
+    margin: 0 0 28px;
+    padding-bottom: 18px;
+    border-bottom: 3px solid var(--rule);
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    font-size: 15px;
+  }
+  .recipient {
+    font-size: 19px;
+  }
+  .recipient .val {
+    color: var(--input-blue);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .date .val {
+    color: var(--input-blue);
+    font-weight: 600;
+  }
+  table.supplier {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border-top: 2px solid var(--rule);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  table.supplier th {
+    background: var(--head-bg);
+    text-align: center;
+    width: 118px;
+    padding: 9px 6px;
+    border: 1px solid var(--rule-soft);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  table.supplier td {
+    padding: 9px 12px;
+    border: 1px solid var(--rule-soft);
+    color: var(--input-blue);
+    font-weight: 600;
+  }
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    border-top: 2px solid var(--rule);
+  }
+  table.items thead th {
+    background: var(--head-bg);
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 600;
+  }
+  table.items tbody td {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--rule-soft);
+    text-align: center;
+  }
+  table.items tbody td.item-name {
+    text-align: left;
+    color: var(--input-blue);
+    font-weight: 600;
+  }
+  table.items tbody td.qty,
+  table.items tbody td.price {
+    color: var(--input-blue);
+    font-weight: 600;
+  }
+  table.items tbody td.amount {
+    text-align: right;
+    padding-right: 12px;
+  }
+  table.items tfoot td {
+    padding: 9px 12px;
+    text-align: right;
+  }
+  table.items tfoot tr.subtotal td,
+  table.items tfoot tr.vat td {
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14px;
+  }
+  table.items tfoot tr.total td {
+    border-top: 2px solid var(--rule);
+    font-size: 17px;
+    font-weight: 700;
+    padding-top: 12px;
+  }
+  table.items tfoot .label {
+    color: var(--ink-soft);
+    padding-right: 16px;
+  }
+  .sign-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px;
+  }
+  .sign-row .sign-label {
+    font-size: 15px;
+  }
+  .sign-row .stamp {
+    width: 56px;
+    height: 56px;
+    margin-left: -12px;
+  }
+  .sign-row .stamp svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
+
+<div class="sheet">
+  <h1 class="title">영&nbsp;&nbsp;수&nbsp;&nbsp;증</h1>
+
+  <div class="meta-row">
+    <div class="recipient"><span class="val">{{RECIPIENT}}</span> 귀하</div>
+    <div class="date">작성일자: <span class="val">{{DATE}}</span></div>
+  </div>
+
+  <table class="supplier">
+    <tr>
+      <th>상호</th><td>{{SUPPLIER_NAME}}</td>
+      <th>사업자등록번호</th><td>{{SUPPLIER_REGNO}}</td>
+    </tr>
+    <tr>
+      <th>대표자</th><td>{{SUPPLIER_CEO}}</td>
+      <th>연락처</th><td>{{SUPPLIER_PHONE}}</td>
+    </tr>
+  </table>
+
+  <table class="items">
+    <thead>
+      <tr><th style="width:40%">품목</th><th style="width:15%">수량</th><th style="width:20%">단가</th><th style="width:25%">금액</th></tr>
+    </thead>
+    <tbody>
+      {{ITEM_ROWS}}
+    </tbody>
+    <tfoot>
+      <tr class="subtotal"><td colspan="3" class="label">합계</td><td>{{SUBTOTAL}}</td></tr>
+      <tr class="vat"><td colspan="3" class="label">부가세 (10%)</td><td>{{VAT}}</td></tr>
+      <tr class="total"><td colspan="3" class="label">총액</td><td>{{TOTAL}}</td></tr>
+    </tfoot>
+  </table>
+
+  <div class="sign-row">
+    <span class="sign-label">공급자 (인)</span>
+    <span class="stamp">{{SIGNATURE_SVG}}</span>
+  </div>
+</div>
