@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{TITLE}} — {{SUBTITLE}}">
+<!-- 파비콘이 있으면: <link rel="icon" href="favicon.svg" type="image/svg+xml"> -->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; color: #ccc; user-select: none; }
+  canvas { display: block; }
+  body:not(.hud-show):not(.choosing) { cursor: none; }
+
+  #hud { position: fixed; left: 0; right: 0; bottom: 0; padding: 26px 22px 14px;
+    background: linear-gradient(transparent, rgba(0,0,0,.82)); opacity: 0; transition: opacity .35s; pointer-events: none; font-size: 13px; }
+  body.hud-show #hud { opacity: 1; pointer-events: auto; }
+  body.hud-off #hud, body.export #hud, body.export .overlay { display: none !important; }
+  #hud-bar { display: flex; gap: 2px; height: 6px; margin-bottom: 9px; cursor: pointer; }
+  #hud-bar .seg { flex: 1; background: #2c2c2c; border-radius: 1px; transition: background .15s; }
+  #hud-bar .seg.first { margin-left: 7px; }
+  #hud-bar .seg:first-child { margin-left: 0; }
+  #hud-bar .seg.on { background: #58C4DD; }
+  #hud-bar .seg:hover { background: #FFD84D; }
+  #hud-info { display: flex; gap: 16px; align-items: baseline; color: #8c8c8c; }
+  #hud-scene { color: #eee; font-weight: 600; cursor: pointer; }
+  #hud-scene:hover { color: #FFD84D; }
+  #hud-count { margin-left: auto; font-variant-numeric: tabular-nums; }
+  #hud-keys { color: #5e5e5e; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: center; justify-content: center; }
+  .overlay.open { display: flex; }
+  .panel { background: #111; border: 1px solid #333; border-radius: 14px; padding: 26px 30px; min-width: 460px; max-width: 92vw; }
+  .panel h2 { margin: 0 0 16px; font-size: 18px; color: #eee; font-weight: 700; }
+  #menu-list { display: grid; gap: 6px; }
+  #menu-list button { all: unset; display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 8px; cursor: pointer; color: #ddd; font-size: 16px; }
+  #menu-list button:hover { background: #1f1f1f; color: #FFD84D; }
+  #menu-list b { font-family: "Times New Roman", serif; font-weight: 400; color: #8c8c8c; font-size: 18px; }
+  #menu-list i { font-style: normal; color: #5e5e5e; font-size: 13px; }
+  table { border-collapse: collapse; font-size: 15px; }
+  td { padding: 6px 14px 6px 0; vertical-align: top; }
+  td:first-child { color: #FFD84D; white-space: nowrap; }
+  #hud-ver:empty { display: none; }
+  #hud-ver { color: #0b0b0b; background: #58C4DD; border-radius: 4px; padding: 1px 7px; font-size: 12px; font-weight: 700; }
+  html.v-basic #hud-ver { background: #FFD84D; }
+
+  #start { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 34px; background: #000; }
+  body.choosing #start { display: flex; }
+  body.choosing #hud { display: none; }
+  #start .brand { height: clamp(26px, 3vw, 38px); margin-bottom: -6px; }
+  #start h1 { margin: 0; font-size: clamp(28px, 4vw, 54px); color: #fff; font-weight: 800; letter-spacing: -0.02em; }
+  #start p.sub { margin: -18px 0 0; color: #8c8c8c; font-family: "Times New Roman", serif; font-style: italic; font-size: clamp(15px, 1.6vw, 22px); }
+  .cards { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; padding: 0 16px; }
+  .card { all: unset; box-sizing: border-box; cursor: pointer; width: min(380px, 86vw); padding: 26px 28px; border-radius: 18px; border: 1.5px solid #333; background: #0e0e0e; transition: border-color .2s, transform .2s, background .2s; }
+  .card:hover, .card:focus-visible { border-color: var(--c); background: #151515; transform: translateY(-3px); }
+  .card .tag { display: inline-block; font-size: 13px; font-weight: 700; color: #000; background: var(--c); border-radius: 5px; padding: 2px 9px; }
+  .card h2 { margin: 14px 0 8px; font-size: 26px; color: #fff; }
+  .card p { margin: 0; color: #bdbdbd; font-size: 15.5px; line-height: 1.6; }
+  .card .meta { margin-top: 16px; color: #6e6e6e; font-size: 13.5px; }
+  .card .meta kbd { margin-right: 4px; }
+  kbd { font-family: inherit; background: #222; border: 1px solid #3a3a3a; border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; font-size: 13px; color: #eee; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- 두 버전(기본/초보자)을 둘 때만 references/engine-api.md 의 「버전 분기」를 보고 #start 선택 화면을 추가한다 -->
+
+<div id="hud">
+  <div id="hud-bar"></div>
+  <div id="hud-info">
+    <span id="hud-ver"></span>
+    <span id="hud-scene"></span>
+    <span id="hud-step"></span>
+    <span id="hud-keys">→ 다음 · ← 이전 · G 장면 이동 · ? 도움말</span>
+    <span id="hud-count"></span>
+  </div>
+</div>
+
+<div id="menu" class="overlay"><div class="panel"><h2>장면 이동</h2><div id="menu-list"></div></div></div>
+
+<div id="help" class="overlay"><div class="panel">
+  <h2>키 조작</h2>
+  <table>
+    <tr><td><kbd>→</kbd> <kbd>Space</kbd> <kbd>PageDown</kbd> 클릭</td><td>다음 스텝 재생 (재생 중이면 즉시 완료)</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>PageUp</kbd></td><td>이전 스텝 상태로 (재생 중이면 시작 전으로)</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>←</kbd></td><td>현재 스텝을 거꾸로 되감기</td></tr>
+    <tr><td><kbd>R</kbd></td><td>현재 스텝 다시 재생</td></tr>
+    <tr><td><kbd>K</kbd></td><td>재생 중 일시정지 / 계속</td></tr>
+    <tr><td><kbd>0</kbd>~<kbd>9</kbd> · <kbd>G</kbd></td><td>장면 바로가기 · 장면 목록</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>처음 / 끝</td></tr>
+    <tr><td><kbd>F</kbd></td><td>전체 화면</td></tr>
+    <tr><td><kbd>C</kbd> · <kbd>T</kbd></td><td>하단 자막 켜기/끄기 · 좌상단 장면 제목 켜기/끄기</td></tr>
+    <tr><td><kbd>B</kbd></td><td>화면 가리기 (검은 화면)</td></tr>
+    <tr><td><kbd>V</kbd></td><td>기본 ↔ 초보자 버전 전환 (처음부터)</td></tr>
+    <tr><td><kbd>L</kbd></td><td>오른쪽 위 서퍼스 로고 켜기/끄기</td></tr>
+    <tr><td><kbd>H</kbd></td><td>하단 진행 막대 완전히 숨기기</td></tr>
+  </table>
+  <p style="color:#777;font-size:13px;margin:16px 0 0">주소 끝의 <b>#번호</b>가 현재 스텝입니다. 새로고침해도 그 위치에서 다시 시작합니다.</p>
+</div></div>
+
+<script>if (new URLSearchParams(location.search).get('v') === 'basic') document.documentElement.classList.add('v-basic');</script>
+<script src="fonts.js"></script>
+<!-- 로고: brand.js 에 window.MG_LOGO_SVG = "<svg…>" 를 두고 여기서 불러오면 오른쪽 위에 표시된다 -->
+<script src="engine.js"></script>
+<script src="scenes/00_title.js"></script>
+<script src="scenes/01_example.js"></script>
+<!-- 장면을 추가할 때마다 여기에 순서대로 <script> 를 넣는다 -->
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "llm-motion-export",
+  "private": true,
+  "type": "module",
+  "description": "LLM 원리 모션그래픽 → 스텝별 MP4 / PPTX 추출",
+  "dependencies": {
+    "playwright-core": "^1.63.0"
+  }
+}
