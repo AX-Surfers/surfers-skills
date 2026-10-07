@@ -5,7 +5,7 @@ spec: recipient, date, items[{name,qty,unit,price}], qty_suffix, discount_pct, d
 import json, os, subprocess, sys
 D = os.path.dirname(os.path.abspath(__file__))
 spec = json.load(open(sys.argv[1])); out = sys.argv[2]; os.makedirs(out, exist_ok=True)
-sup = {'name': '서퍼스', 'regno': '146-33-01415', 'ceo': '김승렬', 'phone': '010-9016-1681', **spec.get('supplier', {})}
+sup = {'name': '인트린직 (서퍼스)', 'regno': '146-33-01415', 'ceo': '김승렬', 'phone': '010-9016-1681', **spec.get('supplier', {})}
 won = lambda n: f"{n:,}원"
 sfx = spec.get('qty_suffix', '명')
 sub = sum(i['qty'] * i['price'] for i in spec['items'])
