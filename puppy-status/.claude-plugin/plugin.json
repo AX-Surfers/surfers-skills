@@ -1,0 +1,6 @@
+{
+  "name": "puppy-status",
+  "version": "0.4.1",
+  "description": "채팅창 위에서 픽셀 강아지가 뛰어놀며 RAM, 대화 기억(컨텍스트), 사용량을 알려주는 띠",
+  "types": "./types/index.d.ts"
+}
